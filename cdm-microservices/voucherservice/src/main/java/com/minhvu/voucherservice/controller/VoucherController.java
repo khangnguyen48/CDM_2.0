@@ -3,6 +3,7 @@ package com.minhvu.voucherservice.controller;
 import com.minhvu.voucherservice.dto.CreateVoucherRequest;
 import com.minhvu.voucherservice.model.Voucher;
 import com.minhvu.voucherservice.service.VoucherService;
+import io.sentry.Sentry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.lang.Exception;
+import io.sentry.Sentry;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,6 +23,12 @@ public class VoucherController {
 
     @GetMapping("/getAll")
     public ResponseEntity<List<Voucher>> getAllVoucher(@RequestParam(value = "name", required = false) String name) {
+        try {
+            throw new Exception("Test if load voucher error.");
+        } catch (Exception e) {
+            Sentry.captureException(e);
+        }
+
         List<Voucher> vouchers;
         if (name != null) {
             vouchers = voucherService.getVoucherByCodeContaining(name);

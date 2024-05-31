@@ -4,6 +4,7 @@ import com.minhvu.reportservice.dto.CreateReportRequest;
 import com.minhvu.reportservice.dto.UpdateReportRequest;
 import com.minhvu.reportservice.model.Report;
 import com.minhvu.reportservice.service.ReportService;
+import io.sentry.Sentry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,7 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+import java.lang.Exception;
+import io.sentry.Sentry;
 @RestController
 @RequestMapping("/api/v1/reports")
 public class ReportController {
@@ -22,6 +24,11 @@ public class ReportController {
 
     @PostMapping
     public ResponseEntity<Report> createReport(@RequestBody CreateReportRequest report) {
+        try {
+            throw new Exception("Test if create report error.");
+        } catch (Exception e) {
+            Sentry.captureException(e);
+        }
         return ResponseEntity.ok(reportService.createReport(report));
     }
 
@@ -32,6 +39,13 @@ public class ReportController {
             @RequestParam(defaultValue = "title") String sortBy,
             @RequestParam(defaultValue = "ASC") Sort.Direction direction
     ) {
+
+        try {
+            throw new Exception("Test if load report error.");
+        } catch (Exception e) {
+            Sentry.captureException(e);
+        }
+
         Page<Report> reportPage = reportService.getAllReports(PageRequest.of(page, size, Sort.by(direction, sortBy)));
         return ResponseEntity.ok(reportPage);
     }

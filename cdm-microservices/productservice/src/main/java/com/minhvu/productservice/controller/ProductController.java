@@ -7,6 +7,7 @@ import com.minhvu.productservice.model.Shop;
 import com.minhvu.productservice.service.CarService;
 import com.minhvu.productservice.service.EnergyService;
 import com.minhvu.productservice.service.ShopService;
+import io.sentry.Sentry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,7 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
+import java.lang.Exception;
+import io.sentry.Sentry;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
@@ -43,6 +45,13 @@ public class ProductController {
             @RequestParam(defaultValue = "model") String sortBy,
             @RequestParam(defaultValue = "ASC") Sort.Direction direction
     ) {
+
+        try {
+            throw new Exception("Test if load car error.");
+        } catch (Exception e) {
+            Sentry.captureException(e);
+        }
+
         Page<Car> carPage = carService.getAllProducts(PageRequest.of(page, size, Sort.by(direction, sortBy)));
         return ResponseEntity.ok(carPage);
     }
@@ -157,6 +166,13 @@ public class ProductController {
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "ASC") Sort.Direction direction
     ) {
+
+        try {
+            throw new Exception("Test if load shop error.");
+        } catch (Exception e) {
+            Sentry.captureException(e);
+        }
+
         Page<Shop> shopPage = shopService.findAll(PageRequest.of(page, size, Sort.by(direction, sortBy)));
         return ResponseEntity.ok(shopPage);
     }

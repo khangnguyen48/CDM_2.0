@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.web.bind.annotation.*;
+import java.lang.Exception;
+import io.sentry.Sentry;
 
 @RestController
 @RequiredArgsConstructor
