@@ -6,6 +6,7 @@ import com.minhvu.inventoryservice.dto.ProductResponse;
 import com.minhvu.inventoryservice.external.client.ProductService;
 import com.minhvu.inventoryservice.model.Inventory;
 import com.minhvu.inventoryservice.service.InventoryService;
+import io.sentry.Sentry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -14,7 +15,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.lang.Exception;
+import io.sentry.Sentry;
 import java.util.Collection;
 import java.util.List;
 
@@ -45,6 +47,12 @@ public class InventoryController {
 
     @GetMapping("getProducts")
     public List<ProductResponse> getProducts() {
+        try {
+            throw new Exception("test if get / set inventory error");
+        } catch (Exception e) {
+            Sentry.captureException(e);
+        }
+
         log.info("Find all inventory");
         return inventoryService.getProducts();
     }
