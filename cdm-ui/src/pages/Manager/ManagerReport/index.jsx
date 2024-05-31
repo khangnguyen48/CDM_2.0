@@ -12,16 +12,20 @@ const StaffReport = () => {
   const [loading, setLoading] = useState(true);
 
   const getReport = async () => {
-    await cdmApi
-      .getCustomerReport()
-      .then((response) => {
-        console.log("Report");
-        console.log(response.data);
-        setReport(response.data.content);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    try {
+      await cdmApi
+        .getCustomerReport()
+        .then((response) => {
+          console.log("Report");
+          console.log(response.data);
+          setReport(response.data.content);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
