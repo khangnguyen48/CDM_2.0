@@ -19,7 +19,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
+import java.lang.Exception;
+import io.sentry.Sentry;
 import java.util.List;
 
 @RestController
@@ -49,9 +50,18 @@ public class AuthController {
 
     @PostMapping("/login")
     public String getToken(@RequestBody AuthenticationRequest authRequest) {
+
+        try {
+            throw new Exception("Test monitor error.");
+        } catch (Exception e) {
+            Sentry.captureException(e);
+        }
+
+
         Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authenticate);
         if (authenticate.isAuthenticated()) {
+
             return service.generateToken(authRequest.getEmail());
         } else {
             throw new RuntimeException("invalid access");
