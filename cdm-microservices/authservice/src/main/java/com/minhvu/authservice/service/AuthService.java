@@ -1,8 +1,6 @@
 package com.minhvu.authservice.service;
 
-import com.minhvu.authservice.dto.ChangePasswordRequest;
-import com.minhvu.authservice.dto.RegisterRequest;
-import com.minhvu.authservice.dto.UpdateUserInformationRequest;
+import com.minhvu.authservice.dto.*;
 import com.minhvu.authservice.entity.User;
 import com.minhvu.authservice.exception.UserNotFoundException;
 import com.minhvu.authservice.exception.response.UserErrorResponse;
@@ -15,13 +13,20 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Data
@@ -36,11 +41,51 @@ public class AuthService {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private EmailService emailService;
+
+    private final Map<String, String> otpCache = new ConcurrentHashMap<>();
+
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
+
+    public String authenticate(AuthenticationRequest authRequest) {
+        //Check account
+        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authenticate);
+
+        if (authenticate.isAuthenticated()) {
+            String otp = generateOtp(authRequest.getEmail());
+            return "OTP sent";
+        } else {
+            throw new RuntimeException("invalid access");
+        }
+    }
+
+    public String generateOtp(String email){
+        Random random = new Random();
+        String otp = String.format("%06d", random.nextInt(1000000));
+        otpCache.put(email, otp);
+        String emailContent = String.format(
+                "Your OTP code is: %s\nThank you for using the service!\n\nBest regards,\nCDM - Car Dealership Management",
+                otp
+        );
+        emailService.sendEmail(email, "Your OTP Code", emailContent);
+        System.out.println("Email sent");
+        return otp;
+    }
+
+    public boolean verifyOtp(String email, String otp){
+        String cachedOtp = otpCache.get(email);
+        return cachedOtp != null && cachedOtp.equals(otp);
+    }
+
 
     public String saveUser(RegisterRequest credential) {
         if (userRepository.existsByNameAllIgnoreCase(credential.getName())) {
@@ -127,4 +172,8 @@ public class AuthService {
     public void deleteUser(String id) {
         userRepository.deleteById(id);
     }
+
+
+
+
 }

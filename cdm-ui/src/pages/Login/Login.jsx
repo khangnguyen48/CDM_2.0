@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import "./login-register.css";
-import { Link } from "react-router-dom";
 import Validation from "./LoginValidation";
 import { useNavigate } from "react-router-dom";
 import { cdmApi } from "../../misc/cdmApi";
@@ -17,6 +16,14 @@ function Login() {
   const [snackbar, setSnackbar] = React.useState(null);
   const handleCloseSnackbar = () => setSnackbar(null);
 
+  const [values, setValues] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [otp, setOtp] = useState("");
+  
   const handleNavigate = async () => {
     const userData = await cdmApi.getUserMe(email);
     if (userData.data.role === "MANAGER") navigate("/managerhome");
@@ -34,18 +41,15 @@ function Login() {
     return () => clearTimeout(timeoutId);
   }, [loading]);
 
-  useEffect(() => {
-    if (!loading) return;
-    const timeoutId = setTimeout(() => {
-      handleNavigate();
-    }, 3000);
-    return () => clearTimeout(timeoutId);
-  }, [loading]);
+  // useEffect(() => {
+  //   if (!loading) return;
+  //   const timeoutId = setTimeout(() => {
+  //     handleNavigate();
+  //   }, 3000);
+  //   return () => clearTimeout(timeoutId);
+  // }, [loading]);
 
-  const [values, setValues] = useState({
-    email: "",
-    password: "",
-  });
+
   const clientId =
     "671243941248-6t9bi1aq2om20nlksbvq9amc8snso34a.apps.googleusercontent.com";
 
@@ -111,28 +115,40 @@ function Login() {
     });
   }, []);
 
-  const handleSubmit = (event) => {
+  const handleSignIn = (event) => {
     event.preventDefault();
     const values = { email, password };
     setErrors(Validation(values));
 
     if (errors.password === "" && errors.email === "") {
       try {
+        setLoading(true);
         const user = { email, password };
         cdmApi
           .authenticate(user)
           .then(async (response) => {
-            setLoading(true);
-            console.log(response);
-            localStorage.setItem("accessToken", response.data);
+            setShowOtpInput(true);
           })
           .catch((error) => {
-            setSnackbar({ children: "Sign in fail!", severity: "error" });
+            setSnackbar({ children: "Wrong username or password", severity: "error" });
             console.log(error);
           });
       } catch (error) {
         console.log(error);
       }
+    }
+  };
+
+  const handleVerifyOtp = async (event) => {
+    event.preventDefault();
+    try {
+      const otpRequest = { email, otp };
+      const response = await cdmApi.verifyOtp(otpRequest);
+      localStorage.setItem("accessToken", response.data);
+      setLoading(true);
+      handleNavigate();
+    } catch (error) {
+      setSnackbar({ children: "Invalid OTP!", severity: "error" });
     }
   };
 
@@ -152,94 +168,138 @@ function Login() {
           </h2>
         </div>
 
-        <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form className="space-y-6" action="#" method="POST">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium leading-6 text-gray-900"
-              >
-                Email address
-              </label>
-              <div className="mt-2">
-                <input
-                  onChange={(e) => setEmail(e.target.value)}
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="px-4 block w-full rounded-md border-0 py-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:text-sm sm:leading-6 bg-white"
-                />
-                {errors.email && (
-                  <span className="text-danger">{errors.email}</span>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium leading-6 text-gray-900"
-                >
-                  Password
-                </label>
-                <div className="text-sm">
-                  <a
-                    href="/login/forgotpassword"
-                    className="font-semibold text-black hover:text-gray-500"
+        {
+          !showOtpInput ? (
+            <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+              <form className="space-y-6" action="#" method="POST">
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium leading-6 text-gray-900"
                   >
-                    Forgot password?
-                  </a>
+                    Email address
+                  </label>
+                  <div className="mt-2">
+                    <input
+                      onChange={(e) => setEmail(e.target.value)}
+                      id="email"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      required
+                      className="px-4 block w-full rounded-md border-0 py-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:text-sm sm:leading-6 bg-white"
+                    />
+                    {errors.email && (
+                      <span className="text-danger">{errors.email}</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="mt-2">
-                <input
-                  onChange={(e) => setPassword(e.target.value)}
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  className="px-4 block w-full rounded-md border-0 py-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:text-sm sm:leading-6 bg-white"
-                />
-                {errors.password && (
-                  <span className="text-danger">{errors.password}</span>
-                )}
-              </div>
-            </div>
+                    
+                <div>
+                  <div className="flex items-center justify-between">
+                    <label
+                      htmlFor="password"
+                      className="block text-sm font-medium leading-6 text-gray-900"
+                    >
+                      Password
+                    </label>
+                  </div>
+                  <div className="mt-2">
+                    <input
+                      onChange={(e) => setPassword(e.target.value)}
+                      id="password"
+                      name="password"
+                      type="password"
+                      autoComplete="current-password"
+                      required
+                      className="px-4 block w-full rounded-md border-0 py-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:text-sm sm:leading-6 bg-white"
+                    />
+                    {errors.password && (
+                      <span className="text-danger">{errors.password}</span>
+                    )}
+                  </div>
+                  <div className="text-sm text-end mt-4">
+                      <a
+                        href="/login/forgotpassword"
+                        className="font-semibold text-black hover:text-gray-500"
+                      >
+                        Forgot password?
+                      </a>
+                    </div>
+                </div>
 
-            <div>
-              <button
-                onClick={handleSubmit}
-                type="submit"
-                className="flex w-full justify-center rounded-md bg-black px-3 py-3 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600"
-              >
-                Sign in
-              </button>
-            </div>
-            <div className="flex justify-center items-center">
-              <div className="line-horizontal mr-4 mt-2"></div>
-              <p>Or</p>
-              <div className="line-horizontal ml-4 mt-2"></div>
-            </div>
-            <div
-              className="flex flex-col justify-center items-center"
-              id="signInDiv"
-            ></div>
-          </form>
+                
+                <div>
+                  <button
+                    onClick={handleSignIn}
+                    type="submit"
+                    className="flex w-full justify-center rounded-md bg-black px-3 py-3 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600"
+                  >
+                    Sign in
+                  </button>
+                </div>
+                <div className="flex justify-center items-center">
+                  <div className="line-horizontal mr-4 mt-2"></div>
+                  <p>Or</p>
+                  <div className="line-horizontal ml-4 mt-2"></div>
+                </div>
+                <div
+                  className="flex flex-col justify-center items-center"
+                  id="signInDiv"
+                ></div>
+              </form>
 
-          <p className="mt-10 text-center text-sm text-gray-500">
-            Don't have account?{" "}
-            <a
-              href="/register"
-              className="font-semibold leading-6 text-black hover:text-gray-500"
-            >
-              Register here
-            </a>
-          </p>
-        </div>
+              <p className="mt-10 text-center text-sm text-gray-500">
+                Don't have account?{" "}
+                <a
+                  href="/register"
+                  className="font-semibold leading-6 text-black hover:text-gray-500"
+                >
+                  Register here
+                </a>
+              </p>
+            </div>
+          ) : 
+          (
+            <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+              <form className="space-y-6" action="#" method="POST">  
+                <div>
+                    <label htmlFor="otp" className="block text-sm font-medium leading-6 text-gray-900">
+                      OTP
+                    </label>
+                    <div className="mt-2">
+                      <input type="text" className="hidden"/>
+                      <input
+                        onChange={(e) => setOtp(e.target.value)}
+                        id="otp"
+                        name="otp"
+                        type="text"
+                        autoComplete="one-time-code"
+                        defaultValue=""
+                        required
+                        className="px-4 block w-full rounded-md border-0 py-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-600 sm:text-sm sm:leading-6 bg-white"
+                      />
+                    </div>
+                    <p className="text-sm text-gray-500 mt-2">Please enter the OTP code sent to your email!</p>
+                  </div>                
+                
+                <div>
+                  <button
+                    onClick={handleVerifyOtp}
+                    type="submit"
+                    className="flex w-full justify-center rounded-md bg-black px-3 py-3 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600"
+                  >
+                    Verify OTP
+                  </button>
+                </div> 
+              </form>
+
+              <p className="mt-10 text-center text-sm text-gray-500">
+                Or back to{" "} <span onClick={() => setShowOtpInput(false)} className="hover:cursor-pointer font-semibold leading-6 italic text-black hover:text-gray-500">sign in</span>
+              </p>
+            </div>
+          )
+        }
       </div>
       {!!snackbar && (
         <Snackbar

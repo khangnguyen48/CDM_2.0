@@ -6,6 +6,7 @@ import com.minhvu.authservice.event.ChangePasswordEvent;
 import com.minhvu.authservice.mapper.UserMapper;
 import com.minhvu.authservice.entity.User;
 import com.minhvu.authservice.service.AuthService;
+import jakarta.ws.rs.BadRequestException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -50,21 +51,22 @@ public class AuthController {
 
     @PostMapping("/login")
     public String getToken(@RequestBody AuthenticationRequest authRequest) {
-
         try {
             throw new Exception("Test monitor error.");
         } catch (Exception e) {
             Sentry.captureException(e);
         }
+        return service.authenticate(authRequest);
 
+    }
 
-        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authenticate);
-        if (authenticate.isAuthenticated()) {
-
-            return service.generateToken(authRequest.getEmail());
+    @PostMapping("/verifyOtp")
+    public String verifyOtp(@RequestBody OtpRequest otpRequest){
+        boolean isValidOtp = service.verifyOtp(otpRequest.getEmail(), otpRequest.getOtp());
+        if(isValidOtp){
+            return service.generateToken(otpRequest.getEmail());
         } else {
-            throw new RuntimeException("invalid access");
+            throw new BadRequestException("Invalid OTP");
         }
     }
 

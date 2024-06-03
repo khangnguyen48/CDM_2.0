@@ -39,6 +39,7 @@ export const cdmApi = {
   createVoucher,
   checkVoucher,
   deleteVoucher,
+  verifyOtp
 }
 
 function authenticate(user) {
@@ -47,6 +48,12 @@ function authenticate(user) {
 
 function signup(user) {
   return instance.post("/auth/register", user, {
+    headers: { "Content-type": "application/json" },
+  });
+}
+
+function verifyOtp(optRequest) {
+  return instance.post("/auth/verifyOtp", optRequest, {
     headers: { "Content-type": "application/json" },
   });
 }
