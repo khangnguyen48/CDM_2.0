@@ -7,7 +7,7 @@ import { createRoot } from "react-dom";
 import { browserTracingIntegration } from "@sentry/react";
 
 Sentry.init({
-  dsn: "https://21aff10c007edc141c3a2716bc40699a@o4507334562938880.ingest.de.sentry.io/4507334569558096",
+  dsn: "https://b9716d3a61263d87b4ba23c6a4aabb0c@o4507395230138368.ingest.de.sentry.io/4507395241541712",
   integrations: [
     Sentry.replayIntegration(),
     Sentry.feedbackIntegration({
