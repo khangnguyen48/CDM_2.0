@@ -61,7 +61,7 @@
                     <debugSentryCli>true</debugSentryCli>
                     <org>the-univeristy-of-information</org>
                     <project>cdm-java-spring-boot</project>
-                    <authToken>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</authToken>
+                    <authToken>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</authToken>
                 </configuration>
                 <executions>
                     <execution>

@@ -25,7 +25,7 @@
 
                     <project>cdm-java-spring-boot</project>
 
-                    <authToken>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</authToken>
+                    <authToken>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</authToken>
                 </configuration>
                 <executions>
                     <execution>
