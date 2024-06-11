@@ -149,16 +149,35 @@ const ManageShopPage = () => {
 
   const handleDeleteApi = async () => {
     try {
-      await cdmApi.deleteCar(deletingId);
+      await cdmApi.deleteShop(deletingId);
       setRows(rows.filter((row) => row.id !== deletingId));
       setDataChangeFlag(!dataChangeFlag);
-      setSnackbar({ children: "Deleted successfully", severity: "success" });
+      setSnackbar({ children: "Deleted successfully", action: (
+        <Button onClick={handleUndoDeleteApi} color="inherit" size="small">
+          UNDO
+        </Button>
+      ), severity: "success", autoHideDuration: 10000 });
       setDeletingId(null);
     } catch (error) {
       console.error("Error deleting product:", error);
     }
   }
 
+  const handleUndoDeleteApi = async () => {
+    try {
+      const response = await cdmApi.undoDeleteShop();
+      console.log(response);
+      const newResponse = await cdmApi.getAllInventory(10000);
+        const newArray = [];
+        newResponse.data.content.forEach((item) => newArray.push(item.products[0]));
+        const addedIndexData = newArray.map((row, index) => ({ ...row, index: index + 1 }));
+        setRows(addedIndexData); 
+      setSnackbar({ children: "Undo delete action successful.", severity: "success"});
+    } catch (error) {
+      console.error("Error undoing delete:", error);
+      setSnackbar({ children: "Failed to undo delete.", severity: "error" });
+    }
+  };
 
   const renderConfirmDialog = () => {
     if (!popupOpen) {

@@ -19,6 +19,8 @@ export const cdmApi = {
   createCar,
   updateCar,
   deleteCar,
+  undoDeleteCar,
+  undoDeleteShop,
   createOrder,
   getAllInventory,
   getAllShop,
@@ -33,6 +35,7 @@ export const cdmApi = {
   getAllOrders,
   updateShop,
   createShop,
+  deleteShop,
   addProductToInventory,
   updateOrder,
   getAllVoucher,
@@ -160,7 +163,7 @@ function getAllCars(page, size, sortBy, direction) {
   return instance.get("/api/v1/products/getAllCars", {
     params: {
       page,
-      size,
+      size : 1000,
       sortBy,
       direction,
     }
@@ -306,10 +309,30 @@ function deleteCar(id) {
   );
 }
 
-function getAllInventory(amount = 10) {
+
+function undoDeleteCar() {
+  return instance.get("/api/v1/products/undoDeleteCar", {
+    headers: {
+      Authorization: bearerAuth(localStorage.getItem("accessToken")),
+    },
+  });
+}
+
+function undoDeleteShop() {
+  return instance.get("/api/v1/products/undoDeleteShop", {
+    headers: {
+      Authorization: bearerAuth(localStorage.getItem("accessToken")),
+    },
+  });
+}
+
+
+
+
+function getAllInventory(pageSize = 10000) {
   return instance.get("/api/v1/inventory/getInventory", {
     params: {
-      size: amount,
+      size: pageSize,
     },
     headers: {
       Authorization: bearerAuth(localStorage.getItem("accessToken")),
@@ -351,6 +374,17 @@ function updateShop(shopData) {
       headers: {
         Authorization: bearerAuth(localStorage.getItem("accessToken")),
         "Content-Type": "application/json",
+      },
+    }
+  );
+}
+
+function deleteShop(id) {
+  return instance.delete(
+    `/api/v1/products/deleteShop/${id}`,
+    {
+      headers: {
+        Authorization: bearerAuth(localStorage.getItem("accessToken")),
       },
     }
   );

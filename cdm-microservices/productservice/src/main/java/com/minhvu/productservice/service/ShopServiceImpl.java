@@ -2,9 +2,11 @@ package com.minhvu.productservice.service;
 
 import com.minhvu.productservice.dto.CreateShopRequest;
 import com.minhvu.productservice.dto.UpdateShopRequest;
+import com.minhvu.productservice.model.Energy;
 import com.minhvu.productservice.model.Shop;
 import com.minhvu.productservice.repository.ShopRepository;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -12,11 +14,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class ShopServiceImpl implements ShopService {
     private final ShopRepository shopRepository;
-
+    private static Shop lastDeletedShop;
     public Page<Shop> findAll(Pageable pageable) {
         return shopRepository.findAll(pageable);
     }
@@ -61,7 +63,21 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     public void deleteProduct(String id) {
+        shopRepository.findById(id).ifPresent(shop -> {
+            lastDeletedShop = shop;
+            shopRepository.deleteById(id);
+        });
         shopRepository.deleteById(id);
+    }
+
+    @Override
+    public Boolean undoDeleteShop() {
+        if(lastDeletedShop != null){
+            shopRepository.save(lastDeletedShop);
+            lastDeletedShop = null;
+            return true;
+        }
+        return false;
     }
     @Override
     public List<Shop> findShopsByNameOrderedByPriceDesc(String name, boolean isAsc) {
@@ -83,4 +99,6 @@ public class ShopServiceImpl implements ShopService {
     public List<Shop> findShopByNameContains(String name) {
         return shopRepository.findByNameContains(name);
     }
+
+
 }

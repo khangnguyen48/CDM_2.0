@@ -92,6 +92,13 @@ public class ProductController {
         carService.deleteProduct(id);
         return ResponseEntity.ok("Delete product successfully");
     }
+
+    @GetMapping("/undoDeleteCar")
+    public Boolean undoDeleteCar() {
+        return carService.undoDeleteCar();
+    }
+
+
     // ///////////////
     // ///////////////
     // ///////////////
@@ -144,6 +151,8 @@ public class ProductController {
         energyService.deleteProduct(id);
         return ResponseEntity.ok("Delete product successfully");
     }
+
+
 
     // ///////////////
     // ///////////////
@@ -213,5 +222,10 @@ public class ProductController {
     public ResponseEntity<String> deleteShop(@PathVariable String id) {
         shopService.deleteProduct(id);
         return ResponseEntity.ok("Delete product successfully");
+    }
+
+    @GetMapping("/undoDeleteShop")
+    public Boolean undoDeleteEnergy() {
+        return shopService.undoDeleteShop();
     }
 }

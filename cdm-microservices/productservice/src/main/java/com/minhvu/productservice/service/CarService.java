@@ -23,4 +23,7 @@ public interface CarService {
     void deleteProduct(String id);
 
     List<Car> findCarsByNameContains(String name);
+
+    Boolean undoDeleteCar();
+
 }

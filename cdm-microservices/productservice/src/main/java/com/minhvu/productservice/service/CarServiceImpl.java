@@ -6,6 +6,7 @@ import com.minhvu.productservice.dto.UpdateCarRequest;
 import com.minhvu.productservice.model.Car;
 import com.minhvu.productservice.repository.CarRepository;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,10 +20,10 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CarServiceImpl implements CarService {
     private final CarRepository carRepository;
-
+    private static Car lastDeletedCar;
     public Page<Car> getAllProducts(Pageable pageable) {
         return carRepository.findAll(pageable);
     }
@@ -87,11 +88,27 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public void deleteProduct(String id) {
+        carRepository.findById(id).ifPresent(car -> {
+            lastDeletedCar = car;
+            carRepository.deleteById(id);
+        });
         carRepository.deleteById(id);
+    }
+
+    @Override
+    public Boolean undoDeleteCar() {
+        if (lastDeletedCar != null) {
+            carRepository.save(lastDeletedCar);
+            lastDeletedCar = null;
+            return true;
+        }
+        return false;
     }
 
     @Override
     public List<Car> findCarsByNameContains(String name) {
         return carRepository.findAllByTrimContainsIgnoreCase(name);
     }
+
+
 }

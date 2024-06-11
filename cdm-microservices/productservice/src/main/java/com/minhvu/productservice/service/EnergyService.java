@@ -22,4 +22,5 @@ public interface EnergyService {
     List<Energy> findEnergyByNameOrderedByPriceDesc(String name, boolean isAsc);
 
     List<Energy> findEnergyByNameContains(String name);
+
 }

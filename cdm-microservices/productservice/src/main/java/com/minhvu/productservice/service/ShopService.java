@@ -23,4 +23,6 @@ public interface ShopService {
     List<Shop> findProductByTypeIgnoreCase(String type);
 
     List<Shop> findShopByNameContains(String name);
+
+    Boolean undoDeleteShop();
 }

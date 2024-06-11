@@ -5,6 +5,7 @@ import com.minhvu.productservice.dto.UpdateEnergyRequest;
 import com.minhvu.productservice.model.Energy;
 import com.minhvu.productservice.repository.EnergyRepository;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -14,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.math.BigDecimal;
 import java.util.List;
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class EnergyServiceImpl implements EnergyService{
     private final EnergyRepository energyRepository;
     public Page<Energy> findAll(Pageable pageable) {
@@ -54,6 +55,7 @@ public class EnergyServiceImpl implements EnergyService{
     public void deleteProduct(String id) {
         energyRepository.deleteById(id);
     }
+
 
     @Override
     public List<Energy> findEnergyByNameOrderedByPriceDesc(String name, boolean isAsc) {
